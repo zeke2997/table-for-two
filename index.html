@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Zeke 食堂</title>
+  <link rel="stylesheet" href="css/style.css?v=20260729">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍳</text></svg>">
+</head>
+<body>
+
+  <!-- 加载看门狗：脚本没跑起来时给出可见提示（ES5 写法保证自身兼容） -->
+  <script>
+  (function () {
+    window.__LOADERRS = [];
+    window.addEventListener('error', function (e) {
+      if (e && e.target && (e.target.src || e.target.href)) {
+        window.__LOADERRS.push('资源加载失败: ' + (e.target.src || e.target.href));
+      }
+    }, true);
+    // 抢救加载器：部分 WebView（如微信）会静默拦截 <script src> 外部脚本。
+    // 4 秒后若程序没跑起来，改用 XHR 拉取代码文本直接执行（XHR 不受拦截）。
+    function xhrEval(u, cb) {
+      var x = new XMLHttpRequest();
+      x.open('GET', u + '?rescue=' + (new Date()).getTime());
+      x.onload = function () {
+        try { (0, eval)(x.responseText); }
+        catch (e) { window.__LOADERRS.push(u + ' 执行失败: ' + e.message); }
+        cb();
+      };
+      x.onerror = function () { window.__LOADERRS.push(u + ' 下载失败'); cb(); };
+      x.send();
+    }
+    setTimeout(function () {
+      if (window.__APP_READY) return;
+      xhrEval('config.js', function () {
+        xhrEval('js/store.js', function () {
+          xhrEval('js/app.js', function () {
+            if (window.__APP_READY) return; // 抢救成功，静默继续
+            var d = document.createElement('div');
+            d.style.cssText = 'position:fixed;left:12px;right:12px;top:18%;z-index:999;background:#fffdf6;border:4px solid #4a2c17;border-radius:16px;padding:18px;font-size:14px;color:#4a2c17;box-shadow:0 6px 0 #4a2c17;text-align:center';
+            d.innerHTML = '⚠️ 程序没有加载完整<br>' +
+              (window.__LOADERRS.length ? '<div style="font-size:11px;color:#b93521;margin:8px 0;word-break:break-all">' + window.__LOADERRS.join('<br>') + '</div>' : '') +
+              '<a href="?fresh=' + (new Date()).getTime() + '" style="display:inline-block;margin-top:10px;background:#4cae2d;color:#fff;padding:10px 22px;border-radius:999px;text-decoration:none">🔄 点此重新加载</a>';
+            document.body.appendChild(d);
+          });
+        });
+      });
+    }, 4000);
+  })();
+  </script>
+
+  <!-- ====== 共享 SVG 游戏素材 ====== -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="goldG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffe25e"/><stop offset="1" stop-color="#f5a623"/>
+      </linearGradient>
+      <!-- 红围裙小厨师（1P 主厨） -->
+      <g id="chefRed">
+        <ellipse cx="36" cy="82" rx="20" ry="5" fill="rgba(0,0,0,.18)"/>
+        <rect x="20" y="52" width="32" height="28" rx="11" fill="#fff" stroke="#33221a" stroke-width="3.5"/>
+        <rect x="20" y="52" width="32" height="10" rx="5" fill="#e8452f" stroke="#33221a" stroke-width="3.5"/>
+        <circle cx="36" cy="70" r="1.8" fill="#33221a"/><circle cx="36" cy="76" r="1.8" fill="#33221a"/>
+        <circle cx="36" cy="34" r="19" fill="#ffdcb8" stroke="#33221a" stroke-width="3.5"/>
+        <circle cx="29" cy="32" r="2.6" fill="#33221a"/><circle cx="30" cy="31" r="1" fill="#fff"/>
+        <circle cx="43" cy="32" r="2.6" fill="#33221a"/><circle cx="44" cy="31" r="1" fill="#fff"/>
+        <circle cx="25" cy="39" r="3.4" fill="#f6b09a" opacity=".8"/>
+        <circle cx="47" cy="39" r="3.4" fill="#f6b09a" opacity=".8"/>
+        <ellipse cx="36" cy="39" rx="6.5" ry="5" fill="#f0996f" stroke="#33221a" stroke-width="2.8"/>
+        <path d="M30 46 q6 4.5 12 0" fill="none" stroke="#33221a" stroke-width="2.6" stroke-linecap="round"/>
+        <circle cx="25" cy="15" r="9" fill="#fff" stroke="#33221a" stroke-width="3.5"/>
+        <circle cx="37" cy="12" r="10" fill="#fff" stroke="#33221a" stroke-width="3.5"/>
+        <circle cx="48" cy="16" r="8" fill="#fff" stroke="#33221a" stroke-width="3.5"/>
+        <rect x="21" y="17" width="30" height="10" rx="5" fill="#fff" stroke="#33221a" stroke-width="3.5"/>
+        <path d="M23 10 q4 -5 9 -5" fill="none" stroke="#e7e2da" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <!-- 绿围裙小厨师（2P 贵宾） -->
+      <g id="chefGreen">
+        <ellipse cx="36" cy="82" rx="20" ry="5" fill="rgba(0,0,0,.18)"/>
+        <rect x="20" y="52" width="32" height="28" rx="11" fill="#fff" stroke="#33221a" stroke-width="3.5"/>
+        <rect x="20" y="52" width="32" height="10" rx="5" fill="#2f9e44" stroke="#33221a" stroke-width="3.5"/>
+        <circle cx="36" cy="70" r="1.8" fill="#33221a"/><circle cx="36" cy="76" r="1.8" fill="#33221a"/>
+        <circle cx="36" cy="34" r="19" fill="#ffdcb8" stroke="#33221a" stroke-width="3.5"/>
+        <circle cx="29" cy="32" r="2.6" fill="#33221a"/><circle cx="30" cy="31" r="1" fill="#fff"/>
+        <circle cx="43" cy="32" r="2.6" fill="#33221a"/><circle cx="44" cy="31" r="1" fill="#fff"/>
+        <circle cx="25" cy="39" r="3.4" fill="#f6b09a" opacity=".8"/>
+        <circle cx="47" cy="39" r="3.4" fill="#f6b09a" opacity=".8"/>
+        <ellipse cx="36" cy="39" rx="6.5" ry="5" fill="#f0996f" stroke="#33221a" stroke-width="2.8"/>
+        <path d="M29 45 a4 4 0 0 0 14 0 z" fill="#33221a"/>
+        <circle cx="25" cy="15" r="9" fill="#fff" stroke="#33221a" stroke-width="3.5"/>
+        <circle cx="37" cy="12" r="10" fill="#fff" stroke="#33221a" stroke-width="3.5"/>
+        <circle cx="48" cy="16" r="8" fill="#fff" stroke="#33221a" stroke-width="3.5"/>
+        <rect x="21" y="17" width="30" height="10" rx="5" fill="#fff" stroke="#33221a" stroke-width="3.5"/>
+        <path d="M23 10 q4 -5 9 -5" fill="none" stroke="#e7e2da" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <!-- 冒热气的炖锅 -->
+      <g id="pot">
+        <path d="M11 30 h50 v19 a9 9 0 0 1 -9 9 h-32 a9 9 0 0 1 -9 -9 z" fill="#5d6570" stroke="#33221a" stroke-width="3.4"/>
+        <path d="M13 32 h46 v4 h-46 z" fill="rgba(255,255,255,.18)"/>
+        <rect x="3" y="32" width="10" height="7" rx="3" fill="#3d434c" stroke="#33221a" stroke-width="2.8"/>
+        <rect x="59" y="32" width="10" height="7" rx="3" fill="#3d434c" stroke="#33221a" stroke-width="2.8"/>
+        <ellipse cx="36" cy="30" rx="25" ry="6" fill="#454c56" stroke="#33221a" stroke-width="3.4"/>
+        <g class="steam">
+          <path d="M22 19 q3 -6 0 -11 M36 21 q4 -7 0 -14 M50 19 q3 -6 0 -11" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".9"/>
+        </g>
+      </g>
+      <!-- 金星 / 灰星 -->
+      <g id="starF">
+        <path d="M11 1.5 l2.9 6.2 6.8 .7 -5.1 4.5 1.5 6.7 -6.1 -3.6 -6.1 3.6 1.5 -6.7 -5.1 -4.5 6.8 -.7 z"
+          fill="url(#goldG)" stroke="#4a2c17" stroke-width="2.2"/>
+        <circle cx="8.5" cy="6.5" r="1.5" fill="#fff" opacity=".85"/>
+      </g>
+      <g id="starE">
+        <path d="M11 1.5 l2.9 6.2 6.8 .7 -5.1 4.5 1.5 6.7 -6.1 -3.6 -6.1 3.6 1.5 -6.7 -5.1 -4.5 6.8 -.7 z"
+          fill="#d8c8ac" stroke="#4a2c17" stroke-width="2.2"/>
+      </g>
+      <!-- 计时器小图标 -->
+      <g id="clockIc">
+        <circle cx="8" cy="9" r="6.5" fill="#fff" stroke="#4a2c17" stroke-width="2"/>
+        <path d="M8 9 V5.5 M8 9 l2.5 1.5" stroke="#4a2c17" stroke-width="1.8" stroke-linecap="round"/>
+        <rect x="6" y="0.5" width="4" height="2.5" rx="1" fill="#e8452f" stroke="#4a2c17" stroke-width="1.2"/>
+      </g>
+      <!-- 播放三角 -->
+      <g id="playTri"><path d="M6 3.5 l13 7.5 -13 7.5 z" fill="#fff" stroke="#245017" stroke-width="2"/></g>
+      <!-- 底部导航图标 -->
+      <g id="panN"><ellipse cx="14" cy="14" rx="11" ry="8.5" fill="#5d6570" stroke="#2c1a0e" stroke-width="2.5"/><ellipse cx="14" cy="12.5" rx="8" ry="5.5" fill="#454c56"/><rect x="23" y="10.5" width="10" height="5" rx="2.5" fill="#c9884d" stroke="#2c1a0e" stroke-width="2.2"/></g>
+      <g id="tickN"><rect x="5" y="3" width="18" height="22" rx="2" fill="#fff" stroke="#2c1a0e" stroke-width="2.5"/><path d="M9 9 h10 M9 14 h10 M9 19 h6" stroke="#c2ab84" stroke-width="2" stroke-linecap="round"/></g>
+      <g id="bellN"><path d="M14 5 a9 9 0 0 1 9 9 v5 h-18 v-5 a9 9 0 0 1 9 -9 z" fill="#ffd23e" stroke="#2c1a0e" stroke-width="2.5"/><circle cx="14" cy="4.5" r="2.4" fill="#ffd23e" stroke="#2c1a0e" stroke-width="2"/><rect x="3" y="19" width="22" height="4" rx="2" fill="#e8a812" stroke="#2c1a0e" stroke-width="2.2"/></g>
+      <g id="bookN"><path d="M4 6 q10 -4 10 0 v18 q0 -4 -10 0 z" fill="#e8452f" stroke="#2c1a0e" stroke-width="2.5"/><path d="M24 6 q-10 -4 -10 0 v18 q0 -4 10 0 z" fill="#fff" stroke="#2c1a0e" stroke-width="2.5"/></g>
+    </defs>
+  </svg>
+
+  <!-- ====== START 开场屏（选择身份） ====== -->
+  <div id="roleOverlay" class="start-screen hidden">
+    <div class="sunburst spin"></div>
+    <div class="start-inner">
+      <div class="logo-board big">
+        <span class="screw tl"></span><span class="screw tr"></span><span class="screw bl"></span><span class="screw br"></span>
+        <h1>ZEKE 食堂</h1>
+      </div>
+      <div class="ribbon-wrap"><div class="ribbon">家 庭 版 胡 闹 厨 房</div></div>
+      <p class="start-tip">选择你的角色</p>
+      <div class="char-row">
+        <button class="char-card" data-role="chef">
+          <svg width="76" height="94" viewBox="0 0 72 88"><use href="#chefRed"/></svg>
+          <span class="char-name">1P · 主厨</span>
+          <span class="char-desc">掌勺 & 接单</span>
+        </button>
+        <button class="char-card" data-role="guest">
+          <svg width="76" height="94" viewBox="0 0 72 88"><use href="#chefGreen"/></svg>
+          <span class="char-name">2P · 贵宾</span>
+          <span class="char-desc">点菜 & 干饭</span>
+        </button>
+      </div>
+      <button id="startBtn" class="start-btn" disabled>▶ 开始游戏</button>
+    </div>
+  </div>
+
+  <!-- 口令屏（配置了口令时） -->
+  <div id="passOverlay" class="start-screen hidden">
+    <div class="sunburst spin"></div>
+    <div class="start-inner">
+      <div class="logo-board big"><h1>ZEKE 食堂</h1></div>
+      <p class="start-tip">🔒 输入通关密码</p>
+      <input type="password" id="passInput" class="input pass-input" placeholder="密码">
+      <p id="passError" class="error-text hidden">密码不对哦，再试试！</p>
+      <button id="passSubmit" class="start-btn">▶ 进入</button>
+    </div>
+  </div>
+
+  <!-- ====== 顶部 ====== -->
+  <div class="awning"></div>
+  <header class="app-header">
+    <div class="brand-mini">
+      <span class="screw tl"></span><span class="screw br"></span>
+      ZEKE 食堂
+    </div>
+    <div class="header-right">
+      <span id="modeBadge" class="mode-badge hidden">本地模式</span>
+      <button id="soundToggle" class="icon-chip" title="音效开关">🔊</button>
+      <button id="roleSwitch" class="role-chip"></button>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- 菜单页 -->
+    <section id="page-menu" class="page">
+      <div class="hero">
+        <div class="sunburst"></div>
+        <div class="hero-row">
+          <svg class="hero-chef" width="58" height="74" viewBox="0 0 72 88" style="transform:rotate(-5deg)"><use href="#chefRed"/></svg>
+          <div class="ribbon-wrap"><div class="ribbon">今 日 菜 单 · 选 关 开 炒</div></div>
+          <svg class="hero-chef" width="58" height="74" viewBox="0 0 72 88" style="transform:rotate(5deg) scaleX(-1)"><use href="#chefGreen"/></svg>
+        </div>
+      </div>
+      <div class="search-row">
+        <input type="search" id="searchInput" class="input search-input" placeholder="🔍 搜索菜名或食材…">
+      </div>
+      <div id="categoryChips" class="chips"></div>
+      <div id="dishList" class="dish-list"></div>
+      <div id="menuEmpty" class="empty hidden">
+        <svg width="90" height="78" viewBox="0 0 72 62"><use href="#pot"/></svg>
+        <p>菜单还是空的</p>
+        <p class="empty-sub">主厨快去「管理」页上架第一道菜吧！</p>
+      </div>
+    </section>
+
+    <!-- 点单篮页 -->
+    <section id="page-cart" class="page hidden">
+      <h2 class="page-title">🛒 我的点单</h2>
+      <div id="cartList"></div>
+      <div id="cartEmpty" class="empty hidden">
+        <div class="empty-emoji">🛒</div>
+        <p>篮子空空如也</p>
+        <p class="empty-sub">去菜单页挑几道好吃的吧～</p>
+      </div>
+      <div id="cartFooter" class="cart-footer hidden">
+        <textarea id="orderNote" class="input" rows="2" placeholder="给主厨留言（可选）：少辣、七点开饭～"></textarea>
+        <button id="submitOrder" class="btn btn-fire btn-block">🔥 下单开火！</button>
+      </div>
+    </section>
+
+    <!-- 订单页 -->
+    <section id="page-orders" class="page hidden">
+      <div class="page-title-row">
+        <h2 class="page-title">📋 订单</h2>
+        <button id="refreshOrders" class="btn btn-small btn-wood">刷新</button>
+      </div>
+      <div id="orderList"></div>
+      <div id="ordersEmpty" class="empty hidden">
+        <div class="empty-emoji">📭</div>
+        <p>还没有订单</p>
+      </div>
+    </section>
+
+    <!-- 管理页 -->
+    <section id="page-manage" class="page hidden">
+      <div class="page-title-row">
+        <h2 class="page-title">📖 菜谱管理</h2>
+        <button id="addDishBtn" class="btn btn-small btn-fire">＋ 上新菜</button>
+      </div>
+      <div id="manageList"></div>
+      <div id="manageEmpty" class="empty hidden">
+        <div class="empty-emoji">📖</div>
+        <p>还没有录入菜谱</p>
+        <p class="empty-sub">点右上角「上新菜」记下第一道拿手菜</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 底部导航 -->
+  <nav class="tabbar">
+    <button class="tab active" data-page="menu"><svg width="28" height="29" viewBox="0 0 28 29"><use href="#panN"/></svg>菜单</button>
+    <button class="tab" data-page="cart"><svg width="28" height="28" viewBox="0 0 28 28"><use href="#tickN"/></svg>点单<span id="cartBadge" class="badge hidden"></span></button>
+    <button class="tab" data-page="orders"><svg width="28" height="29" viewBox="0 0 28 29"><use href="#bellN"/></svg>订单<span id="orderBadge" class="badge hidden"></span></button>
+    <button class="tab" data-page="manage" id="manageTab"><svg width="28" height="29" viewBox="0 0 28 29"><use href="#bookN"/></svg>管理</button>
+  </nav>
+
+  <!-- 菜品详情弹窗 -->
+  <div id="dishModal" class="modal hidden">
+    <div class="modal-mask" data-close></div>
+    <div class="modal-body" id="dishModalBody"></div>
+  </div>
+
+  <!-- 添加/编辑菜品弹窗 -->
+  <div id="editModal" class="modal hidden">
+    <div class="modal-mask" data-close></div>
+    <div class="modal-body">
+      <div class="modal-tab" id="editTitle">上新菜</div>
+      <form id="dishForm">
+        <div class="field photo-field">
+          <label class="photo-upload-button">
+            <input type="file" id="fPhoto" accept="image/*" class="file-input">
+            <span class="photo-upload-icon" aria-hidden="true">📸</span>
+            <span class="photo-upload-copy">
+              <strong id="photoUploadTitle">先来一张菜品照</strong>
+              <small>点击拍照或从相册选择</small>
+            </span>
+            <span class="photo-upload-action" aria-hidden="true">去选图</span>
+          </label>
+          <div id="photoPreview" class="photo-preview hidden"></div>
+        </div>
+        <label class="field">
+          <span class="field-label">菜名 *</span>
+          <input type="text" id="fName" class="input" required placeholder="比如：可乐鸡翅">
+        </label>
+        <div class="field-row">
+          <label class="field grow">
+            <span class="field-label">分类</span>
+            <select id="fCategory" class="input"></select>
+            <input type="text" id="fCategoryNew" class="input hidden" placeholder="输入新分类名" style="margin-top:8px">
+          </label>
+          <label class="field">
+            <span class="field-label">耗时(分钟)</span>
+            <input type="number" id="fMinutes" class="input" min="1" max="999" placeholder="25" style="width:90px">
+          </label>
+        </div>
+        <div class="field-row">
+          <div class="field grow">
+            <span class="field-label">难度</span>
+            <div id="diffPicker" class="diff-picker">
+              <button type="button" data-d="1"><svg width="26" height="26" viewBox="0 0 22 22"><use href="#starF"/></svg></button>
+              <button type="button" data-d="2"><svg width="26" height="26" viewBox="0 0 22 22"><use href="#starF"/></svg></button>
+              <button type="button" data-d="3"><svg width="26" height="26" viewBox="0 0 22 22"><use href="#starE"/></svg></button>
+            </div>
+          </div>
+          <label class="field fav-field">
+            <span class="field-label">她最爱</span>
+            <input type="checkbox" id="fFavorite" class="fav-check">
+            <span class="fav-label">❤️</span>
+          </label>
+        </div>
+        <label class="field">
+          <span class="field-label">食材（备料清单）</span>
+          <textarea id="fIngredients" class="input" rows="3" placeholder="鸡翅 8 个&#10;可乐 1 罐&#10;姜片、生抽、料酒"></textarea>
+        </label>
+        <label class="field">
+          <span class="field-label">做法（通关攻略）</span>
+          <textarea id="fSteps" class="input" rows="5" placeholder="1. 鸡翅两面划刀，焯水&#10;2. 少油煎至两面金黄&#10;3. 倒入可乐没过鸡翅…"></textarea>
+        </label>
+        <label class="field">
+          <span class="field-label">小贴士（可选）</span>
+          <textarea id="fNotes" class="input" rows="2" placeholder="火候、口味偏好等备注"></textarea>
+        </label>
+        <div class="form-actions">
+          <button type="button" class="btn btn-wood" data-close>取消</button>
+          <button type="submit" class="btn btn-fire" id="saveDish">保存上架</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 下单成功盖章动画 -->
+  <div id="stampOverlay" class="stamp-overlay hidden">
+    <div class="stamp">
+      <svg width="70" height="86" viewBox="0 0 72 88"><use href="#chefRed"/></svg>
+      <div class="stamp-text">接单啦！<br>开火 🔥</div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script>window.HTML_VERSION = "20260729";</script>
+  <script src="config.js?v=20260729"></script>
+  <script src="js/store.js?v=20260729"></script>
+  <script src="js/app.js?v=20260729"></script>
+</body>
+</html>

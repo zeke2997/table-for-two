@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>诊断页</title>
+<style>
+body { font-family: sans-serif; padding: 14px; background: #fff; color: #222; font-size: 14px; }
+h2 { font-size: 16px; margin: 14px 0 8px; }
+.row { padding: 7px 10px; border-bottom: 1px solid #eee; word-break: break-all; }
+.ok { color: #1a7f37; }
+.bad { color: #c00; font-weight: bold; }
+#tapBtn { display: block; width: 100%; padding: 18px; font-size: 18px; margin: 10px 0;
+  background: #4cae2d; color: #fff; border: none; border-radius: 12px; }
+#err { color: #c00; white-space: pre-wrap; word-break: break-all; }
+</style>
+</head>
+<body>
+<h1 style="font-size:18px">🔧 Zeke 食堂诊断页</h1>
+<p>请把这一整页截图发给开发者</p>
+
+<h2>① 点按测试（请点 3 下）</h2>
+<button id="tapBtn" type="button">点我 → 已点 <span id="tapN">0</span> 次</button>
+
+<h2>② 环境信息</h2>
+<div id="env"></div>
+
+<h2>③ 功能检测</h2>
+<div id="tests"></div>
+
+<h2>④ 版本核对（缓存诊断）</h2>
+<div id="ver">检测中…</div>
+
+<h2>⑤ 错误记录</h2>
+<div id="err">（无）</div>
+
+<script src="ping.js"></script>
+<script>
+// 全部使用 ES5 语法，保证诊断页自身不会因兼容性挂掉
+var errBox = document.getElementById('err');
+window.onerror = function (msg, src, line) {
+  errBox.textContent = (errBox.textContent === '（无）' ? '' : errBox.textContent + '\n') +
+    msg + ' @' + (src || '') + ':' + line;
+  return false;
+};
+
+// ① 点按
+var n = 0;
+document.getElementById('tapBtn').addEventListener('click', function () {
+  n++;
+  document.getElementById('tapN').textContent = String(n);
+});
+
+// ② 环境
+var env = document.getElementById('env');
+function row(el, label, val, good) {
+  var d = document.createElement('div');
+  d.className = 'row';
+  d.innerHTML = label + '：<span class="' + (good === false ? 'bad' : good === true ? 'ok' : '') + '">' + val + '</span>';
+  el.appendChild(d);
+}
+row(env, 'UA', navigator.userAgent);
+row(env, '视口', window.innerWidth + ' × ' + window.innerHeight);
+row(env, '当前地址', location.href);
+
+// ③ 功能检测
+var t = document.getElementById('tests');
+function test(name, fn) {
+  var ok, detail = '';
+  try { ok = !!fn(); } catch (e) { ok = false; detail = ' — ' + e.message; }
+  row(t, name, (ok ? '✅ 支持' : '❌ 不支持') + detail, ok);
+}
+function syntaxOk(code) {
+  try { new Function(code); return true; } catch (e) { return false; }
+}
+test('外部 script 标签执行（关键项）', function () { return window.__PING === 1; });
+test('可选 catch 语法', function () { return syntaxOk('try{}catch{}'); });
+test('对象展开语法', function () { return syntaxOk('var a={...{b:1}}'); });
+test('模板字符串', function () { return syntaxOk('var a=`x`'); });
+test('closest()', function () { return typeof document.body.closest === 'function'; });
+test('localStorage', function () { localStorage.setItem('t', '1'); return localStorage.getItem('t') === '1'; });
+test('AudioContext', function () { return !!(window.AudioContext || window.webkitAudioContext); });
+test('CSS conic 渐变', function () { return CSS.supports('background', 'repeating-conic-gradient(#fff 0% 25%, #000 0% 50%)'); });
+test('CSS mask', function () { return CSS.supports('-webkit-mask', 'radial-gradient(#000, transparent)') || CSS.supports('mask', 'radial-gradient(#000, transparent)'); });
+test('CSS inset', function () { return CSS.supports('inset', '0'); });
+test('CSS sticky', function () { return CSS.supports('position', 'sticky'); });
+test('SVG use 引用', function () {
+  var d = document.createElement('div');
+  d.innerHTML = '<svg><use href="#x"></use></svg>';
+  return d.querySelector('use') !== null;
+});
+
+// ④ 版本核对：分别拉主页 HTML 和 app.js，看版本是否配套（缓存混搭检测）
+var ver = document.getElementById('ver');
+function grab(url, re, label, done) {
+  var x = new XMLHttpRequest();
+  x.open('GET', url + (url.indexOf('?') > -1 ? '&' : '?') + 'nocache=' + Date.now());
+  x.onload = function () {
+    var m = x.responseText.match(re);
+    row(ver, label, m ? m[1] : '未找到（旧版本！）', !!m);
+    done();
+  };
+  x.onerror = function () { row(ver, label, '请求失败', false); done(); };
+  x.send();
+}
+ver.textContent = '';
+grab('/', /HTML_VERSION\s*=\s*"(\d+)"/, '服务器上的页面版本', function () {
+  grab('/js/app.js', /APP_VERSION\s*=\s*"(\d+)"/, '服务器上的程序版本', function () {
+    // 再测 Supabase 连通性
+    var x = new XMLHttpRequest();
+    x.open('GET', 'https://novamdtefpfmfszbjhuy.supabase.co/rest/v1/dishes?select=id&limit=1');
+    x.setRequestHeader('apikey', 'sb_publishable_B3jpTuAxB4JVsMLppl4wDA_zNfqt9Gb');
+    x.onload = function () { row(ver, '数据库连通', x.status === 200 ? '✅ 正常' : '❌ HTTP ' + x.status, x.status === 200); };
+    x.onerror = function () { row(ver, '数据库连通', '❌ 网络失败', false); };
+    x.send();
+  });
+});
+</script>
+</body>
+</html>
