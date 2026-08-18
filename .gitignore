@@ -7,7 +7,7 @@
 Thumbs.db
 
 # 临时截图、临时文件
-webwxgetmsgimg*.jpg
+# webwxgetmsgimg*.jpg  (2026-08-18 已纳入仓库，作为资料保留)
 *.tmp
 scratchpad/
 
