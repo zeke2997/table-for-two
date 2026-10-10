@@ -106,10 +106,9 @@ function grab(url, re, label, done) {
 ver.textContent = '';
 grab('/', /HTML_VERSION\s*=\s*"(\d+)"/, '服务器上的页面版本', function () {
   grab('/js/app.js', /APP_VERSION\s*=\s*"(\d+)"/, '服务器上的程序版本', function () {
-    // 再测 Supabase 连通性
+    // 再测后端接口和数据库
     var x = new XMLHttpRequest();
-    x.open('GET', 'https://novamdtefpfmfszbjhuy.supabase.co/rest/v1/dishes?select=id&limit=1');
-    x.setRequestHeader('apikey', 'sb_publishable_B3jpTuAxB4JVsMLppl4wDA_zNfqt9Gb');
+    x.open('GET', '/api/health?nocache=' + Date.now());
     x.onload = function () { row(ver, '数据库连通', x.status === 200 ? '✅ 正常' : '❌ HTTP ' + x.status, x.status === 200); };
     x.onerror = function () { row(ver, '数据库连通', '❌ 网络失败', false); };
     x.send();

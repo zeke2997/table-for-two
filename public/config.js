@@ -2,19 +2,13 @@
 // 应用配置 —— 这是你唯一需要手动修改的文件
 // ============================================================
 //
-// 【本地模式】下面两项留空时，数据只存在当前手机/浏览器里，
-//   适合自己先体验。两个人的数据不互通！
-//
-// 【联网模式】注册 Supabase 后（见 README.md 第 2 步），
-//   把项目的 URL 和 anon key 填进来，数据就存在云端，
-//   你和女朋友看到的是同一份菜单和订单。
+// 【联网模式】默认。数据存在 Cloudflare D1 数据库里，所有人看到同一份菜单和订单。
+//   需要按 README 部署到 Cloudflare Pages，或在本地用 `npm run dev` 启动。
+// 【本地模式】把 DATA_MODE 改成 "local"，数据只存在当前浏览器里，
+//   不需要后端，直接打开网页就能体验。不同设备之间数据不互通。
 //
 window.APP_CONFIG = {
-  // Supabase 项目地址，形如 "https://xxxx.supabase.co"
-  SUPABASE_URL: "https://novamdtefpfmfszbjhuy.supabase.co",
-
-  // Supabase 的 anon public key（一长串字母数字）
-  SUPABASE_ANON_KEY: "sb_publishable_B3jpTuAxB4JVsMLppl4wDA_zNfqt9Gb",
+  DATA_MODE: "cloud",
 
   // 进入口令：设置后，打开网页需要先输入口令（防止链接被陌生人打开）。
   // 留空 "" 则不需要口令。

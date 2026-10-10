@@ -9,7 +9,7 @@
   // 微信等浏览器可能缓存旧版页面骨架配新版程序（或反之）导致整体失灵。
   // HTML 里内联了 window.HTML_VERSION，与这里比对；不配套就带随机参数
   // 强制绕过缓存重新加载。fresh 参数防止无限重载循环。
-  const APP_VERSION = "20260729";
+  const APP_VERSION = "20261010";
   if (window.HTML_VERSION !== APP_VERSION && !/[?&]fresh=/.test(location.search)) {
     location.replace(location.pathname + "?fresh=" + Date.now());
     return;

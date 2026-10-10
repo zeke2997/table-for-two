@@ -1,5 +1,21 @@
 # 开发与部署指南（换电脑必看）
 
+> **进行中：迁移到 Cloudflare 全家桶（2026-10 开始）**
+> 原因：Supabase 免费项目闲置 7 天会自动暂停，网站因此失效。改为 Cloudflare Pages + Pages Functions + D1，
+> 免费额度没有闲置暂停的规则。同时把仓库整理成开源项目（仓库已公开，用于求职展示），并加一个
+> 由用户自填大模型 API key 的 AI 功能。下文的 Supabase 相关内容在迁移完成后改写。
+>
+> - [x] 1. 新电脑环境：Node 装在 `~/.local/opt/node`；wrangler 用 API 令牌认证，令牌存
+>   `~/.config/table-for-two/cloudflare.env`（OAuth 登录在本机换取令牌时卡住，未用）。
+>   旧 Supabase 项目已恢复上线，数据完好：22 道菜、1 条订单、23 张照片约 2.9 MB。
+> - [x] 2. 搭后端：D1 `table-for-two` 存菜谱和订单，KV `table-for-two-photos` 存照片（R2 要在控制台
+>   单独开通，未用）；接口在 `functions/api/`，网页移到 `public/`，`npm run dev` 本地联调，
+>   `npm test` 单元测试，`npm run test:api` 接口测试。线上 D1 已建表，尚未部署。
+> - [ ] 3. 把 Supabase 的菜谱和照片导入新库
+> - [ ] 4. AI 功能：用户自填 OpenAI 兼容接口，输入菜名生成食材和做法
+> - [ ] 5. 开源整理：README、许可证、删 `vendor/supabase.js`、清理 `CLAUDE.md` 私人信息、自动化测试
+> - [ ] 6. 上线验收（电脑和微信）并推送
+
 这个仓库当**中转站**用：在一台电脑上改完推上去，换一台电脑拉下来接着改。
 
 - 仓库：https://github.com/zeke2997/table-for-two

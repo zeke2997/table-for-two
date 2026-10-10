@@ -1,5 +1,10 @@
-# Wrangler 本地缓存（部署工具生成，不需要同步）
+# Wrangler 本地缓存与本地数据库（`npm run dev` 生成）
 .wrangler/
+# 本地开发用的密钥
+.dev.vars
+
+# Node
+node_modules/
 
 # WSL / Windows 产生的垃圾文件
 *:Zone.Identifier
@@ -10,7 +15,3 @@ Thumbs.db
 webwxgetmsgimg*.jpg
 *.tmp
 scratchpad/
-
-# Node（本项目无构建步骤，正常不会出现）
-node_modules/
-package-lock.json
