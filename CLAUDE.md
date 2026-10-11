@@ -1,4 +1,4 @@
-# Zeke 食堂（电子菜单）
+# 两人食堂 · Table for Two（电子菜单模板）
 
 为情侣两人居家做饭设计的点菜与菜谱 Web App。一人当主厨，记录菜谱、处理订单；另一人点菜。
 仓库公开，作者用它向招聘方展示与 AI 协作开发的能力，README、页面文案、提交说明等对外文字要保持专业。
@@ -9,7 +9,7 @@
 - 前端 `public/`：原生 HTML/CSS/JS，无构建步骤。UI 为「胡闹厨房官方工艺」游戏风，勿改回普通网页风。
 - 后端 `functions/api/`：Cloudflare Pages Functions；校验与 AI 请求逻辑在 `lib/`。
 - 数据：D1 `table-for-two` 存菜谱和订单，KV 绑定 `PHOTOS` 存照片，表结构在 `migrations/`。
-- 线上：Pages 项目 `zeke-shitang`，https://zeke-shitang.pages.dev
+- 仓库是模板：`wrangler.toml` 不进仓库，用 `npm run setup -- 项目名` 生成并切换要操作的网站。演示网站是 `table-for-two-demo`；作者自用网站的项目名和网址不写进仓库里的任何文件，需要时用 `npx wrangler pages project list` 查看。
 - 开发流程、版本号同步、微信兼容、改表结构的步骤都在 `DEV.md`。改 css/js、新增 JS 文件、改表结构之前先读对应小节。
 
 ## 硬性约定
@@ -18,6 +18,7 @@
 - 改了 `public/css` 或 `public/js`，同步更新三处版本号。
 - 接口对所有人开放读写，新增字段要同时补上校验和单元测试。
 - 页面文案面向情侣两人，角色称呼用 config 里的 `CHEF_NAME`、`GUEST_NAME`，不写死性别。
+- 仓库里不放任何网站专属的信息，包括资源编号、自用网站的名字和网址、真实数据。
 
 ## 本机环境与凭据
 
