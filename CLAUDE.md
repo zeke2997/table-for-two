@@ -1,65 +1,40 @@
 # Zeke 食堂（电子菜单）
 
-两人自用的点菜/菜谱 Web App。主厨（用户 Zeke）记录菜谱，女朋友在线点单。
-用户是编程新手——解释问题时用通俗语言，重要操作前说明在做什么。
+为情侣两人居家做饭设计的点菜与菜谱 Web App。一人当主厨，记录菜谱、处理订单；另一人点菜。
+仓库公开，作者用它向招聘方展示与 AI 协作开发的能力，README、页面文案、提交说明等对外文字要保持专业。
+用户是编程新手，解释问题时用通俗语言，重要操作前说明在做什么。
 
 ## 架构
 
-- **纯静态前端**，无构建步骤，改完即可部署。UI 为「胡闹厨房官方工艺」游戏风（勿改回普通网页风）。
-- **数据库/存储**：Supabase（新加坡区），项目 `novamdtefpfmfszbjhuy`，凭据在 `config.js`（anon/publishable key，可公开）。表：`dishes`、`orders`；图片存 `dish-photos` 公开桶。RLS 允许匿名读写（两人私用的取舍，见 README 安全性说明）。
-- **托管**：Cloudflare Pages 项目 `zeke-shitang` → https://zeke-shitang.pages.dev （账号 zeke2997@gmail.com，wrangler OAuth 凭据在 `~/.config/.wrangler/`）。
+- 前端 `public/`：原生 HTML/CSS/JS，无构建步骤。UI 为「胡闹厨房官方工艺」游戏风，勿改回普通网页风。
+- 后端 `functions/api/`：Cloudflare Pages Functions；校验与 AI 请求逻辑在 `lib/`。
+- 数据：D1 `table-for-two` 存菜谱和订单，KV 绑定 `PHOTOS` 存照片，表结构在 `migrations/`。
+- 线上：Pages 项目 `zeke-shitang`，https://zeke-shitang.pages.dev
+- 开发流程、版本号同步、微信兼容、改表结构的步骤都在 `DEV.md`。改 css/js、新增 JS 文件、改表结构之前先读对应小节。
 
-## 文件
+## 硬性约定
 
-- `index.html` — 页面 + 全部 SVG 游戏素材（小厨师/炖锅/星星/图标，均为原创手绘，因版权不用官方贴图）
-- `css/style.css` — 游戏风样式（按压手感、盖章动画、START 屏）
-- `js/app.js` — 业务逻辑 + WebAudio 合成音效（Sound 模块）
-- `js/store.js` — 数据层：config 未填 Supabase 时自动 localStorage 本地模式；对 difficulty/favorite/cook_minutes 有"列不存在则剥离重试"兼容
-- `vendor/` — supabase-js 与字体（站酷快乐体 + Lilita One，OFL 可商用）本地化，勿改 CDN 引用
-- `supabase/schema.sql` — 建表脚本（含增量迁移），需用户在 Supabase 控制台 SQL Editor 手动执行
-- `design/` — 定稿设计图与实机截图
+- 不引入大体积第三方 JS 库（微信内置浏览器会静默卡住，原因见 DEV.md）；新增 JS 文件必须加进 `index.html` 的抢救加载链。
+- 改了 `public/css` 或 `public/js`，同步更新三处版本号。
+- 接口对所有人开放读写，新增字段要同时补上校验和单元测试。
+- 页面文案面向情侣两人，角色称呼用 config 里的 `CHEF_NAME`、`GUEST_NAME`，不写死性别。
 
-## 多机同步（重要）
+## 本机环境与凭据
 
-GitHub 仓库 https://github.com/zeke2997/table-for-two 作为**中转站**，用于在多台电脑之间同步开发
-（单人开发，不用分支，直接在 `main` 上做）。
-
-- **每次开工前先 `git pull`**，确认这台机器上是最新代码再动手；
-- **每次改动完成后 `git add -A && git commit -m "..." && git push`**，
-  别把改动只留在本地——换电脑时找不回来；
-- `config.js` 是**受追踪文件**（含生产库地址）。若为了试验把 SUPABASE_* 改空走本地模式，
-  提交前务必 `git diff config.js` 确认已改回；
-- **凭据不在仓库里**：Cloudflare 的 wrangler OAuth 令牌在 `~/.config/.wrangler/`，
-  换电脑要重新 `wrangler login`。换机流程见 `DEV.md`。
-
-## 常用操作
-
-```bash
-# 本地预览（注意：config.js 连的是生产库！测试写操作请先复制项目并清空 config 的 SUPABASE_* 走本地模式）
-python3 -m http.server 8000
-
-# 部署（在项目根目录执行）
-wrangler pages deploy . --project-name=zeke-shitang --commit-dirty=true
-# 环境要求：node + wrangler。若本机没有（如刚迁移到新电脑）：
-#   下载 Node 独立包解压到 ~/.local/opt/node 并加入 PATH，npm i -g wrangler，
-#   然后 wrangler login 走一次 OAuth 授权（Cloudflare 账号 zeke2997@gmail.com）。
-```
+- Node 在 `~/.local/opt/node/bin`，非交互 shell 先执行 `export PATH="$HOME/.local/opt/node/bin:$PATH"`。
+- Cloudflare 用 API 令牌认证，使用前执行 `set -a; . ~/.config/table-for-two/cloudflare.env; set +a`。
+  令牌和 `~/.bashrc` 里的各类 API key 一律不打印、不写进仓库。
+- 环境变量里设有 HTTP 代理，访问本地服务要加 `NO_PROXY=127.0.0.1,localhost`。
+- 带 `--remote` 的 D1/KV 写操作和部署会影响真实数据和线上网站，执行前先经用户同意。
 
 ## 测试
 
-E2E 用 Playwright（chromium headless 缓存在 `~/.cache/ms-playwright`，playwright npm 包需临时安装）。
-历史测试脚本在旧会话 scratchpad 中已失效；要点：START 屏需先点角色卡再点 `#startBtn`；`#fFavorite` 是隐藏 checkbox，点 `.fav-label`；START 按钮有 CSS 动画，断言前留缓冲。
-
-## 注意（微信兼容，重要）
-
-- 曾发生微信 XWeb 整页失灵事故（2026-07-22 结案）：**大体积脚本 vendor/supabase.js 被微信卡住不执行且不报错**，堵死后续所有同步脚本；小脚本正常。因此：
-  - **禁止引入大体积外部 JS 库**；数据层 `js/store.js` 用原生 fetch 调 Supabase REST，勿改回 supabase-js；
-  - `index.html` 内联了「抢救加载器」：4 秒未见 `window.__APP_READY` 就用 XHR 拉取 config.js / js/store.js / js/app.js 文本 eval 执行。**新增 js 文件必须加进抢救链**；
-  - 每次改动 css/js：同步递增 `index.html` 的 `?v=`、`window.HTML_VERSION`、`js/app.js` 的 `APP_VERSION` 三处版本号。
-- 线上诊断页 `/debug`（关键检测项：外部 script 标签执行）。微信打开 URL 会自动附加 `?wx_header=1` 参数。
+- `npm test` 单元测试；先 `npm run dev`，再 `npm run test:api` 接口测试。GitHub Actions 每次提交自动跑这两项。
+- 界面测试用 Python playwright 加 headless chromium（缓存在 `~/.cache/ms-playwright`），脚本放会话 scratchpad，
+  用普通 `python3` 运行（加 `-I` 会导致 playwright 导入失败）。要点：START 屏先点角色卡再点 `#startBtn`；
+  `#fFavorite` 是隐藏 checkbox，点 `.fav-label`；START 按钮有动画，断言前留缓冲。
 
 ## 注意
 
-- 数据库结构变更（加列等）只能由用户在 Supabase 控制台 SQL Editor 执行，anon key 无 DDL 权限。
 - 部署后 `*.pages.dev` 首次访问可能短暂 522，重试即可。
-- 用户大陆网络实测可访问（2026-07 确认）；若未来访问劣化，方案是加自定义域名（无需备案）。
+- 大陆网络实测可访问（2026-07 确认）；若访问劣化，方案是加自定义域名（无需备案）。
