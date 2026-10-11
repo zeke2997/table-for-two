@@ -11,7 +11,9 @@
 > - [x] 2. 搭后端：D1 `table-for-two` 存菜谱和订单，KV `table-for-two-photos` 存照片（R2 要在控制台
 >   单独开通，未用）；接口在 `functions/api/`，网页移到 `public/`，`npm run dev` 本地联调，
 >   `npm test` 单元测试，`npm run test:api` 接口测试。线上 D1 已建表，尚未部署。
-> - [ ] 3. 把 Supabase 的菜谱和照片导入新库
+> - [x] 3. 已把 Supabase 的 22 道菜、1 条订单、22 张照片导入线上 D1 和 KV，逐条核对一致。照片沿用原文件名，
+>   菜谱里的照片地址改成 `/api/photos/<文件名>`。Supabase 存储桶里另有 1 张没有菜引用的照片，未导入。
+>   第 6 步上线验收通过之前，Supabase 项目保留作备份，之后再决定删除还是任其暂停。
 > - [ ] 4. AI 功能：用户自填 OpenAI 兼容接口，输入菜名生成食材和做法
 > - [ ] 5. 开源整理：README、许可证、删 `vendor/supabase.js`、清理 `CLAUDE.md` 私人信息、自动化测试
 > - [ ] 6. 上线验收（电脑和微信）并推送
