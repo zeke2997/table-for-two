@@ -2,7 +2,7 @@
   "name": "table-for-two",
   "version": "1.0.0",
   "private": true,
-  "description": "为情侣两人居家做饭设计的点菜与菜谱网页应用，支持 AI 生成菜谱",
+  "description": "两人食堂：为情侣两人居家做饭设计的点菜与菜谱网页应用（电子菜单），支持 AI 生成菜谱",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,10 +13,11 @@
     "node": ">=20"
   },
   "scripts": {
+    "setup": "node scripts/setup.mjs",
     "dev": "wrangler pages dev",
     "deploy": "wrangler pages deploy",
-    "db:migrate:local": "wrangler d1 migrations apply table-for-two --local",
-    "db:migrate:remote": "wrangler d1 migrations apply table-for-two --remote",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "test": "node --test \"tests/*.test.js\"",
     "test:api": "node --test tests/api.e2e.js"
   },

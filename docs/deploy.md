@@ -1,6 +1,6 @@
 # 部署教程
 
-按照本教程，可以在自己的 Cloudflare 账号下部署一份独立的 Zeke 食堂，数据只属于你们两人。全程使用免费额度，不需要绑定信用卡，不需要购买域名，也不需要 ICP 备案。
+按照本教程，可以在自己的 Cloudflare 账号下部署一份独立的两人食堂，数据只属于你们两人。全程使用免费额度，不需要绑定信用卡，不需要购买域名，也不需要 ICP 备案。
 
 ## 准备工作
 
@@ -22,62 +22,49 @@ npx wrangler login
 
 浏览器会打开 Cloudflare 的授权页面，登录并同意授权。之后执行 `npx wrangler whoami`，能看到自己的邮箱就说明授权成功。
 
-如果授权页面一直卡住，可以改用访问令牌。在 Cloudflare 控制台右上角头像菜单进入 **My Profile → API Tokens → Create Token**，选择 **Create Custom Token**，添加以下三项账号权限：
+如果授权页面一直卡住，可以改用访问令牌。在 Cloudflare 控制台右上角头像菜单进入 **My Profile → API Tokens → Create Token**，选择 **Create Custom Token**，添加以下权限：
 
-- Cloudflare Pages：Edit
-- D1：Edit
-- Workers KV Storage：Edit
+- Account → Cloudflare Pages：Edit
+- Account → D1：Edit
+- Account → Workers KV Storage：Edit
+- Account → Account Settings：Read
+- User → Memberships：Read
+- User → User Details：Read
 
 创建后复制令牌，在终端里设置环境变量 `CLOUDFLARE_API_TOKEN`，后续命令会自动使用它。令牌相当于账号密码，不要提交到仓库，也不要发给别人。
 
-## 第二步：创建数据库和照片存储
+## 第二步：创建网站、数据库和照片存储
+
+先想好项目名，它决定网址 `https://项目名.pages.dev`。项目名只能包含小写字母、数字和连字符，例如 `our-kitchen`。然后执行：
 
 ```bash
-npx wrangler d1 create table-for-two
-npx wrangler kv namespace create PHOTOS
+npm run setup -- 你的项目名
 ```
 
-两条命令会分别输出一个 `database_id` 和一个 `id`。打开项目根目录的 `wrangler.toml`，用它们替换原有的值：
+这条命令会依次完成以下工作：
 
-```toml
-name = "你的项目名"            # 决定网址：https://你的项目名.pages.dev
+1. 在你的 Cloudflare 账号里创建同名的 Pages 项目、D1 数据库，以及名为“项目名-photos”的 KV 存储，已经存在的直接沿用；
+2. 按 `wrangler.example.toml` 生成 `wrangler.toml`，填好上面三项资源的编号；
+3. 在数据库里建好数据表。
 
-[[d1_databases]]
-binding = "DB"
-database_name = "table-for-two"
-database_id = "第一条命令输出的 database_id"
+命令可以重复运行，不会重复创建资源，也不会改动已有数据。换了电脑或者删掉了 `wrangler.toml`，重新运行一次即可恢复。`wrangler.toml` 只属于你的网站，已经在 `.gitignore` 里排除，不会被提交。
 
-[[kv_namespaces]]
-binding = "PHOTOS"
-id = "第二条命令输出的 id"
-```
-
-项目名只能包含小写字母、数字和连字符，例如 `our-kitchen`。数据库名请保持 `table-for-two`，`package.json` 里的命令用的是这个名字。
-
-然后创建数据表：
+## 第三步：部署
 
 ```bash
-npm run db:migrate:remote
-```
-
-## 第三步：创建 Pages 项目并部署
-
-```bash
-npx wrangler pages project create 你的项目名 --production-branch main
 npm run deploy
 ```
 
-部署完成后，终端会显示网址 `https://你的项目名.pages.dev`。第一次访问偶尔会出现 522 错误，稍等片刻刷新即可。
+部署完成后，终端会显示网址。第一次访问偶尔会出现 522 错误，稍等片刻刷新即可。
 
 ## 第四步：个性化设置
 
-编辑 `public/config.js`：
+用电脑或手机打开网址，以主厨身份进入“管理”页，点“店铺设置”，可以修改店名和两个角色的称呼。设置保存在你的网站数据库里，两个人看到的是同一份。
+
+另外两项设置在 `public/config.js` 里，改完需要重新执行 `npm run deploy`：
 
 - `PASSCODE`：进入口令。设置后，打开网页需要先输入口令，可以防止陌生人误入。
-- `CHEF_NAME`、`GUEST_NAME`：两个角色的显示名称。
-- `DEFAULT_CATEGORIES`：默认的菜品分类，在管理页添加菜品时也可以现场新建分类。
-
-页面标题“Zeke 食堂”写在 `public/index.html` 里，可以搜索后替换成你们自己的名字。修改后重新执行 `npm run deploy` 即可生效。
+- `DEFAULT_CATEGORIES`：默认的菜品分类。在管理页添加菜品时，也可以现场新建分类。
 
 ## 使用 AI 写菜谱
 
@@ -105,3 +92,5 @@ AI 功能使用你自己的大模型账号，费用由该账号承担，本项�
 **`.pages.dev` 网址在某些网络下打不开**：可以在 Cloudflare 控制台给 Pages 项目绑定一个自己的域名。项目托管在境外，绑定域名不需要 ICP 备案。
 
 **以后修改了代码怎么更新**：在项目目录执行 `npm run deploy`。如果数据库结构有变化，先执行 `npm run db:migrate:remote`。
+
+**同一个账号下想部署多个网站**：对每个网站分别运行 `npm run setup -- 项目名`，再执行 `npm run deploy`。setup 每次都会把 `wrangler.toml` 切换到对应的网站，部署前确认终端里显示的是你要部署的那一个。

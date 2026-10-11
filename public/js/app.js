@@ -45,8 +45,21 @@
   let formDifficulty = 2;
   let pendingRole = null; // START 屏上选中的角色
 
+  // 店铺设置（店名、两个角色的称呼）：默认值来自 config.js，网站自己的设置存在数据库里。
+  // 上次读到的设置缓存在本机，打开页面时先用缓存显示，避免名字闪一下才变过来。
+  const shopDefaults = {
+    app_name: cfg.APP_NAME || "两人食堂",
+    chef_name: cfg.CHEF_NAME || "主厨",
+    guest_name: cfg.GUEST_NAME || "贵宾",
+  };
+  let shop = { ...shopDefaults, ...loadShopCache() };
+
+  function loadShopCache() {
+    try { return JSON.parse(localStorage.getItem("hm.shopCache")) || {}; } catch { return {}; }
+  }
+
   const role = () => localStorage.getItem("hm.role");
-  const roleName = () => (role() === "chef" ? cfg.CHEF_NAME : cfg.GUEST_NAME);
+  const roleName = () => (role() === "chef" ? shop.chef_name : shop.guest_name);
 
   // ---------- 游戏音效（WebAudio 合成，无音频文件） ----------
   const Sound = {
@@ -856,6 +869,57 @@
     }
   });
 
+  // ---------- 店铺设置 ----------
+  function applyShop() {
+    $$(".app-name").forEach((el) => (el.textContent = shop.app_name));
+    $$(".chef-name").forEach((el) => (el.textContent = shop.chef_name));
+    $$(".guest-name").forEach((el) => (el.textContent = shop.guest_name));
+    document.title = shop.app_name;
+    if (role()) applyRole();
+  }
+
+  function setShop(saved) {
+    shop = { ...shopDefaults, ...saved };
+    localStorage.setItem("hm.shopCache", JSON.stringify(saved));
+    applyShop();
+  }
+
+  async function refreshShop() {
+    try {
+      setShop(await Store.getSettings());
+    } catch { /* 读不到就继续用缓存或默认值 */ }
+  }
+
+  $("#shopSettingsBtn").addEventListener("click", () => {
+    $("#sAppName").value = shop.app_name;
+    $("#sChefName").value = shop.chef_name;
+    $("#sGuestName").value = shop.guest_name;
+    $("#shopModal").classList.remove("hidden");
+  });
+
+  $("#shopSave").addEventListener("click", async () => {
+    const patch = {
+      app_name: $("#sAppName").value.trim(),
+      chef_name: $("#sChefName").value.trim(),
+      guest_name: $("#sGuestName").value.trim(),
+    };
+    if (!patch.app_name || !patch.chef_name || !patch.guest_name) {
+      toast("店名和两个称呼都要填写", true);
+      return;
+    }
+    const btn = $("#shopSave");
+    btn.disabled = true;
+    try {
+      setShop(await Store.updateSettings(patch));
+      closeModals();
+      toast("店铺设置已保存");
+    } catch (err) {
+      toast("保存失败：" + err.message, true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
   // ---------- 启动 ----------
   async function init() {
     window.__APP_READY = true; // 告知加载看门狗：程序已跑起来
@@ -863,6 +927,8 @@
       $("#modeBadge").classList.remove("hidden");
     }
     renderSoundToggle();
+    applyShop();
+    refreshShop();
     if (checkPasscode()) ensureRole();
     renderCartBadge();
     await refreshDishes();

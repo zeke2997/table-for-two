@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { HttpError } from "../lib/http.js";
-import { dishInput, orderInput, statusInput, dishRow, orderRow } from "../lib/validate.js";
+import { dishInput, orderInput, statusInput, settingsInput, dishRow, orderRow } from "../lib/validate.js";
 
 const rejects = (fn, re) =>
   assert.throws(fn, (e) => e instanceof HttpError && e.status === 400 && re.test(e.message));
@@ -75,6 +75,16 @@ test("下单：至少一道菜，份数默认 1，菜品多余字段丢弃", () 
 test("订单状态只能是四种之一", () => {
   assert.equal(statusInput({ status: "done" }), "done");
   rejects(() => statusInput({ status: "eaten" }), /状态/);
+});
+
+test("店铺设置：只接受店名和两个称呼，不能为空、不能太长", () => {
+  assert.deepEqual(settingsInput({ app_name: " Zeke 食堂 ", chef_name: "大厨", other: "x" }), {
+    app_name: "Zeke 食堂",
+    chef_name: "大厨",
+  });
+  rejects(() => settingsInput({}), /没有可修改/);
+  rejects(() => settingsInput({ app_name: "  " }), /店名/);
+  rejects(() => settingsInput({ guest_name: "很长很长很长的称呼" }), /8/);
 });
 
 test("数据库行还原成前端需要的类型", () => {

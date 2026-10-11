@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Zeke 食堂</title>
+  <title>两人食堂</title>
   <link rel="stylesheet" href="css/style.css?v=20261011">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍳</text></svg>">
 </head>
@@ -137,19 +137,19 @@
     <div class="start-inner">
       <div class="logo-board big">
         <span class="screw tl"></span><span class="screw tr"></span><span class="screw bl"></span><span class="screw br"></span>
-        <h1>ZEKE 食堂</h1>
+        <h1 class="app-name">两人食堂</h1>
       </div>
       <div class="ribbon-wrap"><div class="ribbon">家 庭 版 胡 闹 厨 房</div></div>
       <p class="start-tip">选择你的角色</p>
       <div class="char-row">
         <button class="char-card" data-role="chef">
           <svg width="76" height="94" viewBox="0 0 72 88"><use href="#chefRed"/></svg>
-          <span class="char-name">1P · 主厨</span>
+          <span class="char-name">1P · <span class="chef-name">主厨</span></span>
           <span class="char-desc">掌勺 & 接单</span>
         </button>
         <button class="char-card" data-role="guest">
           <svg width="76" height="94" viewBox="0 0 72 88"><use href="#chefGreen"/></svg>
-          <span class="char-name">2P · 贵宾</span>
+          <span class="char-name">2P · <span class="guest-name">贵宾</span></span>
           <span class="char-desc">点菜 & 干饭</span>
         </button>
       </div>
@@ -161,7 +161,7 @@
   <div id="passOverlay" class="start-screen hidden">
     <div class="sunburst spin"></div>
     <div class="start-inner">
-      <div class="logo-board big"><h1>ZEKE 食堂</h1></div>
+      <div class="logo-board big"><h1 class="app-name">两人食堂</h1></div>
       <p class="start-tip">🔒 输入通关密码</p>
       <input type="password" id="passInput" class="input pass-input" placeholder="密码">
       <p id="passError" class="error-text hidden">密码不对哦，再试试！</p>
@@ -174,7 +174,7 @@
   <header class="app-header">
     <div class="brand-mini">
       <span class="screw tl"></span><span class="screw br"></span>
-      ZEKE 食堂
+      <span class="app-name">两人食堂</span>
     </div>
     <div class="header-right">
       <span id="modeBadge" class="mode-badge hidden">本地模式</span>
@@ -239,7 +239,10 @@
     <section id="page-manage" class="page hidden">
       <div class="page-title-row">
         <h2 class="page-title">📖 菜谱管理</h2>
-        <button id="addDishBtn" class="btn btn-small btn-fire">＋ 上新菜</button>
+        <span class="title-actions">
+          <button id="shopSettingsBtn" class="btn btn-small btn-wood">⚙️ 店铺设置</button>
+          <button id="addDishBtn" class="btn btn-small btn-fire">＋ 上新菜</button>
+        </span>
       </div>
       <div id="manageList"></div>
       <div id="manageEmpty" class="empty hidden">
@@ -334,6 +337,33 @@
           <button type="submit" class="btn btn-fire" id="saveDish">保存上架</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- 店铺设置弹窗 -->
+  <div id="shopModal" class="modal hidden">
+    <div class="modal-mask" data-close></div>
+    <div class="modal-body">
+      <div class="modal-tab">店铺设置</div>
+      <label class="field">
+        <span class="field-label">店名</span>
+        <input type="text" id="sAppName" class="input" maxlength="12" placeholder="两人食堂">
+      </label>
+      <div class="field-row">
+        <label class="field grow">
+          <span class="field-label">主厨称呼</span>
+          <input type="text" id="sChefName" class="input" maxlength="8" placeholder="主厨">
+        </label>
+        <label class="field grow">
+          <span class="field-label">贵宾称呼</span>
+          <input type="text" id="sGuestName" class="input" maxlength="8" placeholder="贵宾">
+        </label>
+      </div>
+      <p class="ai-note">店名显示在招牌和浏览器标题上，称呼显示在开场的角色卡和订单里。两台设备看到的是同一份设置。</p>
+      <div class="form-actions">
+        <button type="button" class="btn btn-wood" data-close>取消</button>
+        <button type="button" class="btn btn-fire" id="shopSave">保存</button>
+      </div>
     </div>
   </div>
 

@@ -107,6 +107,18 @@ test("订单：下单 → 列表 → 改状态", async () => {
   assert.equal((await api("/orders/" + o.data.id, { method: "PATCH", body: { status: "eaten" } })).status, 400);
 });
 
+test("店铺设置：保存后能读回，非法输入返回 400", async () => {
+  const before = (await api("/settings")).data;
+  const saved = await api("/settings", { method: "PATCH", body: { app_name: "测试食堂", chef_name: "大厨" } });
+  assert.equal(saved.status, 200);
+  assert.equal(saved.data.app_name, "测试食堂");
+  assert.equal((await api("/settings")).data.chef_name, "大厨");
+  assert.equal((await api("/settings", { method: "PATCH", body: { app_name: "" } })).status, 400);
+  // 还原，避免影响本地数据
+  const restore = { app_name: before.app_name || "两人食堂", chef_name: before.chef_name || "主厨" };
+  await api("/settings", { method: "PATCH", body: restore });
+});
+
 test("不存在的接口返回 JSON 404", async () => {
   const r = await api("/nope");
   assert.equal(r.status, 404);

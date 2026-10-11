@@ -88,6 +88,15 @@
     async generateRecipe() {
       throw new Error("本地模式没有后端，AI 写菜谱需要联网模式");
     },
+
+    async getSettings() {
+      try { return JSON.parse(localStorage.getItem("hm.shop")) || {}; } catch { return {}; }
+    },
+    async updateSettings(patch) {
+      const next = { ...(await this.getSettings()), ...patch };
+      localStorage.setItem("hm.shop", JSON.stringify(next));
+      return next;
+    },
   };
 
   // ---------------- 联网模式（调用本站 /api，后端是 Cloudflare Pages Functions + D1） ----------------
@@ -160,6 +169,14 @@
     // AI 写菜谱：payload 含菜名或照片，以及用户自己的接口地址、密钥、模型
     generateRecipe(payload) {
       return this._req("/ai/recipe", this._json("POST", payload));
+    },
+
+    // 店铺设置：店名和两个角色的称呼
+    getSettings() {
+      return this._req("/settings");
+    },
+    updateSettings(patch) {
+      return this._req("/settings", this._json("PATCH", patch));
     },
   };
 

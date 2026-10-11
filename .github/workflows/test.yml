@@ -16,6 +16,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: cp wrangler.example.toml wrangler.toml
       - name: 单元测试
         run: npm test
       - name: 接口测试（本地 D1 和 KV）

@@ -1,0 +1,17 @@
+# Cloudflare 配置模板。
+# 运行 `npm run setup -- <项目名>` 会按这个模板生成 wrangler.toml，填好你自己账号里的资源编号。
+# wrangler.toml 属于各自的网站，不提交到仓库。
+# 只在本地开发、暂时没有 Cloudflare 账号时，把本文件复制成 wrangler.toml 即可，本地数据库不需要真实编号。
+name = "table-for-two"
+pages_build_output_dir = "public"
+compatibility_date = "2026-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "table-for-two"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "PHOTOS"
+id = "00000000000000000000000000000000"
