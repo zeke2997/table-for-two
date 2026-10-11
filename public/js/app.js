@@ -9,7 +9,7 @@
   // 微信等浏览器可能缓存旧版页面骨架配新版程序（或反之）导致整体失灵。
   // HTML 里内联了 window.HTML_VERSION，与这里比对；不配套就带随机参数
   // 强制绕过缓存重新加载。fresh 参数防止无限重载循环。
-  const APP_VERSION = "20261010";
+  const APP_VERSION = "20261011";
   if (window.HTML_VERSION !== APP_VERSION && !/[?&]fresh=/.test(location.search)) {
     location.replace(location.pathname + "?fresh=" + Date.now());
     return;
@@ -115,7 +115,8 @@
     el.classList.remove("hidden");
     if (isError) Sound.play("error");
     clearTimeout(toast._t);
-    toast._t = setTimeout(() => el.classList.add("hidden"), 2400);
+    // 长提示（例如 AI 出错说明）多停留一会儿，留够阅读时间
+    toast._t = setTimeout(() => el.classList.add("hidden"), Math.min(8000, Math.max(2400, msg.length * 100)));
   }
 
   function fmtTime(iso) {
@@ -741,6 +742,117 @@
       toast("保存失败：" + err.message, true);
     } finally {
       btn.disabled = false;
+    }
+  });
+
+  // ---------- AI 写菜谱 ----------
+  // 接口地址、密钥、模型由用户自己填写，只存在当前浏览器的 localStorage 里。
+  function loadAiSettings() {
+    try { return JSON.parse(localStorage.getItem("hm.ai")) || {}; } catch { return {}; }
+  }
+
+  function openAiSettings() {
+    const s = loadAiSettings();
+    $("#aiBaseUrl").value = s.baseUrl || "";
+    $("#aiApiKey").value = s.apiKey || "";
+    $("#aiModel").value = s.model || "";
+    $("#aiModal").classList.remove("hidden");
+  }
+  const closeAiSettings = () => $("#aiModal").classList.add("hidden");
+
+  $("#aiSettingsBtn").addEventListener("click", openAiSettings);
+  $$("[data-ai-close]").forEach((el) => el.addEventListener("click", closeAiSettings));
+
+  $("#aiSave").addEventListener("click", () => {
+    const s = {
+      baseUrl: $("#aiBaseUrl").value.trim(),
+      apiKey: $("#aiApiKey").value.trim(),
+      model: $("#aiModel").value.trim(),
+    };
+    if (!s.baseUrl || !s.apiKey || !s.model) {
+      toast("接口地址、API Key、模型名称都要填写", true);
+      return;
+    }
+    localStorage.setItem("hm.ai", JSON.stringify(s));
+    closeAiSettings();
+    toast("AI 设置已保存");
+  });
+
+  $("#aiClear").addEventListener("click", () => {
+    if (!confirm("要清除保存在这个浏览器里的 AI 设置吗？")) return;
+    localStorage.removeItem("hm.ai");
+    $("#aiBaseUrl").value = $("#aiApiKey").value = $("#aiModel").value = "";
+    toast("AI 设置已清除");
+  });
+
+  // 编辑已有菜品时照片是站内地址，转成 data URL 才能发给模型
+  async function currentPhotoDataUrl() {
+    if (photoDataUrl) return photoDataUrl;
+    const dish = editingDishId && dishes.find((d) => d.id === editingDishId);
+    if (!dish || !dish.photo) return null;
+    if (dish.photo.startsWith("data:")) return dish.photo;
+    const blob = await (await fetch(dish.photo)).blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("照片读取失败"));
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  function fillFromRecipe(r) {
+    if (r.name && !$("#fName").value.trim()) $("#fName").value = r.name;
+    if (r.category && allCategories().includes(r.category)) {
+      $("#fCategory").value = r.category;
+      $("#fCategoryNew").classList.add("hidden");
+    }
+    if (r.cook_minutes) $("#fMinutes").value = r.cook_minutes;
+    if (r.difficulty) {
+      formDifficulty = r.difficulty;
+      renderDiffPicker();
+    }
+    $("#fIngredients").value = r.ingredients || "";
+    $("#fSteps").value = r.steps || "";
+    $("#fNotes").value = r.notes || "";
+  }
+
+  $("#aiGenerate").addEventListener("click", async () => {
+    const s = loadAiSettings();
+    if (!s.baseUrl || !s.apiKey || !s.model) {
+      toast("先填写 AI 设置，再来生成菜谱");
+      openAiSettings();
+      return;
+    }
+    const name = $("#fName").value.trim();
+    const btn = $("#aiGenerate");
+    btn.disabled = true;
+    try {
+      // 填了菜名只发文字，任何模型都能用；没填菜名才发照片，需要模型支持图片输入
+      const image = name ? null : await currentPhotoDataUrl();
+      if (!name && !image) {
+        toast("先填写菜名，或者选一张菜品照片", true);
+        return;
+      }
+      const filled = ["#fIngredients", "#fSteps", "#fNotes"].some((sel) => $(sel).value.trim());
+      if (filled && !confirm("AI 生成的内容会替换已经填写的食材、做法和小贴士，继续吗？")) return;
+
+      btn.textContent = image ? "🤖 正在看照片…" : "🤖 正在写菜谱…";
+      const r = await Store.generateRecipe({
+        name,
+        image,
+        categories: allCategories(),
+        baseUrl: s.baseUrl,
+        apiKey: s.apiKey,
+        model: s.model,
+      });
+      fillFromRecipe(r);
+      Sound.play("success");
+      toast(image ? `认出来了，这是${r.name}` : "菜谱写好了，检查一下再保存");
+    } catch (err) {
+      toast("AI 生成失败：" + err.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "🤖 AI 写菜谱";
     }
   });
 

@@ -1,7 +1,8 @@
 // 接口端到端测试：先 `npm run dev` 启动本地服务器，再 `npm run test:api`。
 // 默认连 http://127.0.0.1:8788，可用 BASE_URL 环境变量改。会在本地数据库里增删数据。
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
+import { createServer } from "node:http";
 
 const BASE = (process.env.BASE_URL || "http://127.0.0.1:8788").replace(/\/+$/, "");
 
@@ -110,4 +111,80 @@ test("不存在的接口返回 JSON 404", async () => {
   const r = await api("/nope");
   assert.equal(r.status, 404);
   assert.equal(typeof r.data.error, "string");
+});
+
+// ---------- AI 写菜谱：起一个模拟的 OpenAI 兼容服务，不消耗真实额度 ----------
+const fake = { last: null };
+const fakeServer = createServer((req, res) => {
+  let raw = "";
+  req.on("data", (c) => (raw += c));
+  req.on("end", () => {
+    const body = JSON.parse(raw);
+    fake.last = { path: req.url, auth: req.headers.authorization, body };
+    const send = (status, obj) => {
+      res.writeHead(status, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(obj));
+    };
+    if (req.headers.authorization !== "Bearer sk-good") return send(401, { error: { message: "invalid api key" } });
+    const hasImage = Array.isArray(body.messages[1].content);
+    if (hasImage && body.model === "text-only") {
+      return send(400, { error: { message: "unknown variant `image_url`, expected `text`" } });
+    }
+    if (body.model === "blind") {
+      const reply = { name: "", ingredients: [], steps: [], notes: "照片太暗看不清" };
+      return send(200, { choices: [{ message: { content: JSON.stringify(reply) } }] });
+    }
+    const recipe = {
+      name: hasImage ? "可乐鸡翅" : "",
+      category: "荤菜",
+      cook_minutes: 30,
+      difficulty: 2,
+      ingredients: ["鸡翅 8 个", "可乐 1 罐"],
+      steps: ["鸡翅焯水", "煎至金黄", "倒入可乐收汁"],
+      notes: "最后大火收汁",
+    };
+    send(200, { choices: [{ message: { content: "```json\n" + JSON.stringify(recipe) + "\n```" } }] });
+  });
+});
+await new Promise((r) => fakeServer.listen(0, "127.0.0.1", r));
+after(() => fakeServer.close());
+const fakeBase = `http://127.0.0.1:${fakeServer.address().port}/v1`;
+const aiReq = (extra) =>
+  api("/ai/recipe", {
+    method: "POST",
+    body: { name: "可乐鸡翅", categories: ["荤菜", "素菜"], baseUrl: fakeBase, apiKey: "sk-good", model: "m", ...extra },
+  });
+
+test("AI：按菜名生成，转发时带上密钥，结果整理成表单格式", async () => {
+  const r = await aiReq();
+  assert.equal(r.status, 200);
+  assert.equal(fake.last.path, "/v1/chat/completions");
+  assert.equal(fake.last.auth, "Bearer sk-good");
+  assert.equal(fake.last.body.model, "m");
+  assert.equal(r.data.category, "荤菜");
+  assert.equal(r.data.steps, "1. 鸡翅焯水\n2. 煎至金黄\n3. 倒入可乐收汁");
+});
+
+test("AI：只给照片时按多模态格式发送并返回认出的菜名", async () => {
+  const r = await aiReq({ name: "", image: "data:image/jpeg;base64,/9j/4AAQ" });
+  assert.equal(r.status, 200);
+  assert.equal(r.data.name, "可乐鸡翅");
+  assert.equal(fake.last.body.messages[1].content[1].type, "image_url");
+});
+
+test("AI：密钥错误、模型不支持图片、照片认不出时给出对应提示", async () => {
+  const bad = await aiReq({ apiKey: "sk-bad" });
+  assert.equal(bad.status, 502);
+  assert.match(bad.data.error, /API Key 无效/);
+
+  const noVision = await aiReq({ name: "", image: "data:image/jpeg;base64,/9j/4AAQ", model: "text-only" });
+  assert.equal(noVision.status, 502);
+  assert.match(noVision.data.error, /不支持识别图片/);
+
+  const blind = await aiReq({ name: "", image: "data:image/jpeg;base64,/9j/4AAQ", model: "blind" });
+  assert.equal(blind.status, 502);
+  assert.match(blind.data.error, /没能从照片认出这道菜（照片太暗看不清）/);
+
+  const insecure = await aiReq({ baseUrl: "http://api.example.com/v1" });
+  assert.equal(insecure.status, 400);
 });

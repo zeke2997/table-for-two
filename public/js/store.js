@@ -84,6 +84,10 @@
     async uploadPhoto(dataUrl) {
       return dataUrl;
     },
+
+    async generateRecipe() {
+      throw new Error("本地模式没有后端，AI 写菜谱需要联网模式");
+    },
   };
 
   // ---------------- 联网模式（调用本站 /api，后端是 Cloudflare Pages Functions + D1） ----------------
@@ -151,6 +155,11 @@
         body: blob,
       });
       return r.url;
+    },
+
+    // AI 写菜谱：payload 含菜名或照片，以及用户自己的接口地址、密钥、模型
+    generateRecipe(payload) {
+      return this._req("/ai/recipe", this._json("POST", payload));
     },
   };
 

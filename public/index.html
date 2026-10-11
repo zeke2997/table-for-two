@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Zeke 食堂</title>
-  <link rel="stylesheet" href="css/style.css?v=20261010">
+  <link rel="stylesheet" href="css/style.css?v=20261011">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍳</text></svg>">
 </head>
 <body>
@@ -286,6 +286,11 @@
           <span class="field-label">菜名 *</span>
           <input type="text" id="fName" class="input" required placeholder="比如：可乐鸡翅">
         </label>
+        <div class="ai-bar">
+          <button type="button" id="aiGenerate" class="btn btn-small btn-go">🤖 AI 写菜谱</button>
+          <button type="button" id="aiSettingsBtn" class="ai-link">⚙️ AI 设置</button>
+        </div>
+        <p class="ai-hint">填了菜名就按菜名生成；没填菜名就根据照片认出是什么菜。生成结果会填进下面的表单，保存前可以修改。</p>
         <div class="field-row">
           <label class="field grow">
             <span class="field-label">分类</span>
@@ -332,6 +337,34 @@
     </div>
   </div>
 
+  <!-- AI 设置弹窗（叠在编辑弹窗上面，关闭时只关自己） -->
+  <div id="aiModal" class="modal modal-top hidden">
+    <div class="modal-mask" data-ai-close></div>
+    <div class="modal-body">
+      <div class="modal-tab">AI 设置</div>
+      <p class="ai-note">可以填写任何兼容 OpenAI 接口的大模型服务，例如 DeepSeek、通义千问、OpenAI。调用费用由你自己的账户承担。</p>
+      <label class="field">
+        <span class="field-label">接口地址</span>
+        <input type="url" id="aiBaseUrl" class="input" placeholder="https://api.deepseek.com/v1" autocomplete="off">
+      </label>
+      <label class="field">
+        <span class="field-label">API Key</span>
+        <input type="password" id="aiApiKey" class="input" placeholder="sk-..." autocomplete="off">
+      </label>
+      <label class="field">
+        <span class="field-label">模型名称</span>
+        <input type="text" id="aiModel" class="input" placeholder="deepseek-chat" autocomplete="off">
+      </label>
+      <p class="ai-note">📷 想用照片识别菜品，需要选择支持图片输入的模型，例如通义千问的 qwen-vl-plus。只按菜名生成的话，任何模型都可以。</p>
+      <p class="ai-note">🔒 这些设置只保存在当前浏览器里。生成菜谱时，请求经本站服务器转发给你填写的服务商，服务器不保存你的密钥。</p>
+      <div class="form-actions">
+        <button type="button" class="btn btn-wood" id="aiClear">清除</button>
+        <button type="button" class="btn btn-wood" data-ai-close>取消</button>
+        <button type="button" class="btn btn-fire" id="aiSave">保存</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 下单成功盖章动画 -->
   <div id="stampOverlay" class="stamp-overlay hidden">
     <div class="stamp">
@@ -342,9 +375,9 @@
 
   <div id="toast" class="toast hidden"></div>
 
-  <script>window.HTML_VERSION = "20261010";</script>
-  <script src="config.js?v=20261010"></script>
-  <script src="js/store.js?v=20261010"></script>
-  <script src="js/app.js?v=20261010"></script>
+  <script>window.HTML_VERSION = "20261011";</script>
+  <script src="config.js?v=20261011"></script>
+  <script src="js/store.js?v=20261011"></script>
+  <script src="js/app.js?v=20261011"></script>
 </body>
 </html>

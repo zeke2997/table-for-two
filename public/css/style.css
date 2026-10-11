@@ -491,6 +491,18 @@ textarea.input { resize: vertical; }
 .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
 .form-actions .btn { min-width: 104px; }
 
+/* AI 写菜谱 */
+.modal-top { z-index: 45; }
+.ai-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+.ai-bar .btn:disabled { opacity: .7; }
+.ai-link {
+  font: inherit; font-size: .8rem; color: var(--tan); background: none; border: none;
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 6px 2px;
+}
+.ai-hint { font-size: .72rem; color: var(--tan); margin-top: 6px; line-height: 1.5; }
+.ai-note { font-size: .8rem; color: var(--ink); line-height: 1.6; margin-top: 12px; }
+#aiModal .form-actions .btn { min-width: 0; flex: 1; }
+
 @media (max-width: 390px) {
   .photo-upload-button { gap: 10px; padding: 13px 11px; }
   .photo-upload-icon { flex-basis: 56px; height: 56px; font-size: 1.9rem; }
