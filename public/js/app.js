@@ -333,7 +333,7 @@
         const qty = cartQty(d.id);
         const soldOut = d.available === false;
         const tags = [];
-        if (d.favorite) tags.push('<span class="tag">❤️ 她最爱</span>');
+        if (d.favorite) tags.push('<span class="tag">❤️ TA 最爱</span>');
         return `
         <div class="dish-card ${soldOut ? "sold-out" : ""}" data-id="${esc(d.id)}">
           ${tileHtml(d)}

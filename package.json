@@ -2,8 +2,16 @@
   "name": "table-for-two",
   "version": "1.0.0",
   "private": true,
-  "description": "两人自用的电子菜单：主厨记菜谱，另一半在线点单",
+  "description": "为情侣两人居家做饭设计的点菜与菜谱网页应用，支持 AI 生成菜谱",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zeke2997/table-for-two.git"
+  },
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "wrangler pages dev",
     "deploy": "wrangler pages deploy",

@@ -1,0 +1,29 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 单元测试
+        run: npm test
+      - name: 接口测试（本地 D1 和 KV）
+        run: |
+          npm run db:migrate:local
+          npx wrangler pages dev --port 8788 --ip 127.0.0.1 > dev.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8788/api/health && break; sleep 1; done
+          npm run test:api
+      - name: 失败时输出本地服务器日志
+        if: failure()
+        run: cat dev.log

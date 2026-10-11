@@ -1,9 +1,11 @@
-# 开发与部署指南（换电脑必看）
+# 开发说明
+
+本文件面向维护者，记录开发流程、必须遵守的约定和踩过的坑。项目介绍、本地开发命令和部署方法见 [README](README.md) 与 [部署教程](docs/deploy.md)。
 
 > **进行中：迁移到 Cloudflare 全家桶（2026-10 开始）**
 > 原因：Supabase 免费项目闲置 7 天会自动暂停，网站因此失效。改为 Cloudflare Pages + Pages Functions + D1，
 > 免费额度没有闲置暂停的规则。同时把仓库整理成开源项目（仓库已公开，用于求职展示），并加一个
-> 由用户自填大模型 API key 的 AI 功能。下文的 Supabase 相关内容在迁移完成后改写。
+> 由用户自填大模型 API key 的 AI 功能。
 >
 > - [x] 1. 新电脑环境：Node 装在 `~/.local/opt/node`；wrangler 用 API 令牌认证，令牌存
 >   `~/.config/table-for-two/cloudflare.env`（OAuth 登录在本机换取令牌时卡住，未用）。
@@ -18,127 +20,66 @@
 >   用户在「AI 设置」里自填 OpenAI 兼容接口，只存在浏览器 localStorage；请求经 `/api/ai/recipe` 转发（避开跨域），
 >   服务端代码在 `lib/ai.js`。模型不支持图片、照片认不出、密钥错误等情况都有对应提示。
 >   已用真实 DeepSeek 验证：按菜名生成约 2 秒，番茄炒蛋照片能认对。
-> - [ ] 5. 开源整理：README、许可证、删 `vendor/supabase.js`、清理 `CLAUDE.md` 私人信息、自动化测试
+> - [ ] 5. 开源整理：README（截图、架构图、AI 协作开发）、部署教程 `docs/deploy.md`、MIT 许可证、
+>   GitHub Actions 自动测试、本文件改写、删除 `supabase/`、“她最爱”改为“TA 最爱”。待办：`CLAUDE.md` 改写（需用户审核内容）。
 > - [ ] 6. 上线验收（电脑和微信）并推送
 
-这个仓库当**中转站**用：在一台电脑上改完推上去，换一台电脑拉下来接着改。
 
-- 仓库：https://github.com/zeke2997/table-for-two
-- 线上：https://zeke-shitang.pages.dev
-- Cloudflare Pages 项目名：`zeke-shitang`（账号 zeke2997@gmail.com）
-- Supabase 项目：`novamdtefpfmfszbjhuy`（新加坡区）
+## 仓库与线上
 
----
+- 仓库：https://github.com/zeke2997/table-for-two ，单人开发，直接在 `main` 上提交。仓库同时用作多台电脑之间的中转站。
+- 线上：https://zeke-shitang.pages.dev ，Cloudflare Pages 项目 `zeke-shitang`。
+- Cloudflare 资源：D1 数据库 `table-for-two`，KV 命名空间 `table-for-two-photos`（绑定名 `PHOTOS`），ID 写在 `wrangler.toml`。
 
-## 一、仓库里有什么、没有什么
+## 换电脑后恢复环境
 
-**有**：全部源码、设计稿、`config.js`（Supabase 地址和 publishable key，本来就是公开的前端密钥）、
-`supabase/schema.sql` 建表脚本。拉下来就能跑、能部署。
+1. `git clone` 后在仓库里设置提交身份 `git config user.name` 和 `git config user.email`。首次推送时用 GitHub 个人访问令牌认证。
+2. 安装 Node.js 20 以上版本，执行 `npm install`。
+3. Cloudflare 认证二选一。一是执行 `npx wrangler login`；二是使用 API 令牌，令牌权限见部署教程。本机的令牌存在 `~/.config/table-for-two/cloudflare.env`，使用前执行 `set -a; . ~/.config/table-for-two/cloudflare.env; set +a`。令牌不进仓库，换电脑需要重新创建。
+4. `npm run db:migrate:local` 初始化本地数据库，然后 `npm run dev` 确认能打开。
 
-**没有（换电脑要重新弄）**：
-
-| 东西 | 存在哪 | 怎么恢复 |
-|---|---|---|
-| Cloudflare 部署授权 | `~/.config/.wrangler/config/default.toml` | 跑一次 `wrangler login` |
-| GitHub 推送凭据 | 系统钥匙串 / `~/.git-credentials` | 首次 push 时输令牌 |
-| Supabase 控制台 | 网页登录 | 用 zeke2997@gmail.com 登录 supabase.com |
-
-> 这三样都是机器本地的，故意不进仓库。丢了不影响代码，重新授权即可。
-
----
-
-## 二、新电脑上从零恢复
-
-### 1. 装 Git 并拉代码
+## 日常流程
 
 ```bash
-git clone https://github.com/zeke2997/table-for-two.git
-cd table-for-two
-git config user.name "zeke2997"
-git config user.email "zeke2997@gmail.com"
+git pull                   # 开工前先同步
+npm run dev                # 本地联调，数据在 .wrangler/，不影响线上
+npm test                   # 改了 lib/ 或接口要跑
+npm run test:api           # 需要 npm run dev 正在运行
+git add -A && git commit -m "改了什么" && git push
+npm run deploy             # 上线，部署的是当前工作目录的 public/ 和 functions/
 ```
 
-首次 `git push` 会要求认证：Username 填 `zeke2997`，Password 位置粘贴
-**个人访问令牌**（https://github.com/settings/tokens → Generate new token (classic) → 勾 `repo`）。
+先推送再部署，部署出问题时代码已经安全保存在 GitHub 上。
 
-让它记住，只输一次：
-
-```bash
-# Mac
-git config --global credential.helper osxkeychain
-# Linux / WSL
-git config --global credential.helper store
-```
-
-### 2. 装 Node 和 wrangler（只有要部署时才需要）
-
-```bash
-# 如果新机器没有 node：去 nodejs.org 下 LTS 版，或下独立包解压到 ~/.local/opt/node 并加进 PATH
-npm install -g wrangler
-wrangler login        # 浏览器弹出 Cloudflare 授权页，用 zeke2997@gmail.com 登录
-wrangler whoami       # 确认显示 zeke2997@gmail.com
-```
-
-### 3. 验证能跑起来
-
-```bash
-python3 -m http.server 8000
-# 浏览器打开 http://localhost:8000，右上角没有「本地模式」标记就说明连上生产库了
-```
-
----
-
-## 三、日常流程
-
-```bash
-git pull                                   # ① 开工前必做
-
-python3 -m http.server 8000                # ② 本地预览（连的是生产库，注意别乱删菜）
-
-# ③ 改代码 ...（改了 css/js 记得同步版本号，见下）
-
-git add -A && git commit -m "改了什么" && git push    # ④ 存回中转站
-
-wrangler pages deploy . --project-name=zeke-shitang --commit-dirty=true   # ⑤ 上线
-```
-
-先 push 再 deploy——万一部署出问题，代码已经安全存在 GitHub 了。
-
----
-
-## 四、两个必须记住的坑
+## 必须遵守的约定
 
 ### 版本号三处同步
 
-改了 `css/style.css` 或 `js/*.js` 之后，必须把下面三处一起改成新日期（如 `20260807`），
-否则手机上加载的还是旧缓存：
+改了 `public/css/` 或 `public/js/` 下的文件，要把下面三处一起改成新日期（例如 `20261011`），否则手机上加载的还是旧缓存：
 
 | 文件 | 位置 |
 |---|---|
-| `index.html` | 4 处 `?v=20260729`（style.css / config.js / store.js / app.js） |
-| `index.html` | `window.HTML_VERSION = "20260729";` |
-| `js/app.js` | `const APP_VERSION = "20260729";` |
+| `public/index.html` | 4 处 `?v=`（style.css、config.js、store.js、app.js） |
+| `public/index.html` | `window.HTML_VERSION` |
+| `public/js/app.js` | `APP_VERSION` |
 
-程序会比对 `HTML_VERSION` 和 `APP_VERSION`，不一致时自动强制刷新。
-应急：网址后面加 `?fresh=1`。
+程序会比对 `HTML_VERSION` 和 `APP_VERSION`，不一致时自动强制刷新。临时绕过缓存可以在网址后加 `?fresh=1`。
 
 ### 微信兼容
 
-2026-07 出过事故：微信内置浏览器加载**大体积 JS 会静默卡死**，堵死后续所有脚本。所以：
+2026 年 7 月出过一次事故：微信内置浏览器加载大体积脚本时会静默卡住，不报错，并且会堵住后面所有脚本，整页失灵。因此：
 
-- 禁止引入大体积第三方 JS 库；数据层 `js/store.js` 用原生 fetch 调 Supabase REST，别改回 supabase-js
-- `index.html` 里内联了「抢救加载器」（4 秒没见 `window.__APP_READY` 就用 XHR 拉取代码 eval 执行），
-  **新增的 js 文件必须加进这条链**
-- 线上诊断页：`/debug`
+- 不引入大体积的第三方 JS 库，数据层 `public/js/store.js` 只用原生 fetch；
+- `public/index.html` 内联了“抢救加载器”，4 秒内没有看到 `window.__APP_READY` 就用 XHR 拉取脚本文本执行。**新增 JS 文件必须加进这条加载链**；
+- 线上诊断页 `/debug`，微信打开网址时会自动附加 `?wx_header=1` 参数。
 
----
+### 接口
 
-## 五、数据库改结构
+- 接口对所有人开放读写，所有输入都要经过 `lib/validate.js` 或 `lib/ai.js` 校验，新增字段要同时补上校验和单元测试。
+- 出错时抛出 `HttpError(状态码, 中文说明)`，`functions/api/_middleware.js` 统一转成 `{ error }` 返回，前端直接展示给用户。
 
-`config.js` 里的 key 只能读写数据，**没有 DDL 权限**。加字段/加表要：
+### 数据库改结构
 
-1. 把 SQL 追加进 `supabase/schema.sql`（脚本里已有增量迁移写法可参考）
-2. 登录 supabase.com → 项目 `novamdtefpfmfszbjhuy` → 左侧 **SQL Editor** → 粘贴执行
-
-`js/store.js` 对 `difficulty` / `favorite` / `cook_minutes` 做了「列不存在就剥离重试」的兼容，
-所以漏执行迁移不会直接崩，但新功能会静默失效——排查问题时留意这一点。
+1. 在 `migrations/` 新建下一个编号的 SQL 文件，例如 `0002_add_xxx.sql`；
+2. `npm run db:migrate:local`，本地验证；
+3. `npm run db:migrate:remote`，再部署代码。

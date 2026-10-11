@@ -1,0 +1,107 @@
+# 部署教程
+
+按照本教程，可以在自己的 Cloudflare 账号下部署一份独立的 Zeke 食堂，数据只属于你们两人。全程使用免费额度，不需要绑定信用卡，不需要购买域名，也不需要 ICP 备案。
+
+## 准备工作
+
+1. **Node.js 20 或更高版本**：从 https://nodejs.org 下载长期支持版并安装。安装后在终端执行 `node -v`，能看到版本号即可。
+2. **Cloudflare 账号**：在 https://dash.cloudflare.com/sign-up 用邮箱注册。登录后如果提示添加域名，直接跳过。
+3. **下载代码并安装依赖**：
+
+   ```bash
+   git clone https://github.com/zeke2997/table-for-two.git
+   cd table-for-two
+   npm install
+   ```
+
+## 第一步：授权命令行工具
+
+```bash
+npx wrangler login
+```
+
+浏览器会打开 Cloudflare 的授权页面，登录并同意授权。之后执行 `npx wrangler whoami`，能看到自己的邮箱就说明授权成功。
+
+如果授权页面一直卡住，可以改用访问令牌。在 Cloudflare 控制台右上角头像菜单进入 **My Profile → API Tokens → Create Token**，选择 **Create Custom Token**，添加以下三项账号权限：
+
+- Cloudflare Pages：Edit
+- D1：Edit
+- Workers KV Storage：Edit
+
+创建后复制令牌，在终端里设置环境变量 `CLOUDFLARE_API_TOKEN`，后续命令会自动使用它。令牌相当于账号密码，不要提交到仓库，也不要发给别人。
+
+## 第二步：创建数据库和照片存储
+
+```bash
+npx wrangler d1 create table-for-two
+npx wrangler kv namespace create PHOTOS
+```
+
+两条命令会分别输出一个 `database_id` 和一个 `id`。打开项目根目录的 `wrangler.toml`，用它们替换原有的值：
+
+```toml
+name = "你的项目名"            # 决定网址：https://你的项目名.pages.dev
+
+[[d1_databases]]
+binding = "DB"
+database_name = "table-for-two"
+database_id = "第一条命令输出的 database_id"
+
+[[kv_namespaces]]
+binding = "PHOTOS"
+id = "第二条命令输出的 id"
+```
+
+项目名只能包含小写字母、数字和连字符，例如 `our-kitchen`。数据库名请保持 `table-for-two`，`package.json` 里的命令用的是这个名字。
+
+然后创建数据表：
+
+```bash
+npm run db:migrate:remote
+```
+
+## 第三步：创建 Pages 项目并部署
+
+```bash
+npx wrangler pages project create 你的项目名 --production-branch main
+npm run deploy
+```
+
+部署完成后，终端会显示网址 `https://你的项目名.pages.dev`。第一次访问偶尔会出现 522 错误，稍等片刻刷新即可。
+
+## 第四步：个性化设置
+
+编辑 `public/config.js`：
+
+- `PASSCODE`：进入口令。设置后，打开网页需要先输入口令，可以防止陌生人误入。
+- `CHEF_NAME`、`GUEST_NAME`：两个角色的显示名称。
+- `DEFAULT_CATEGORIES`：默认的菜品分类，在管理页添加菜品时也可以现场新建分类。
+
+页面标题“Zeke 食堂”写在 `public/index.html` 里，可以搜索后替换成你们自己的名字。修改后重新执行 `npm run deploy` 即可生效。
+
+## 使用 AI 写菜谱
+
+AI 功能使用你自己的大模型账号，费用由该账号承担，本项目不提供任何模型额度。
+
+1. 以主厨身份进入“管理”页，点“上新菜”。
+2. 点菜名下方的“AI 设置”，填写接口地址、API Key 和模型名称，然后保存。任何兼容 OpenAI 接口的服务都可以使用，例如 DeepSeek（接口地址 `https://api.deepseek.com/v1`）和通义千问（接口地址 `https://dashscope.aliyuncs.com/compatible-mode/v1`）。
+3. 填写菜名后点“AI 写菜谱”，生成的内容会填进表单，检查修改后再保存。
+
+如果想只拍一张照片让 AI 认出是什么菜，需要选择支持图片输入的模型。只按菜名生成的话，任何模型都可以。
+
+这些设置只保存在当前浏览器里，换手机或换浏览器需要重新填写。
+
+## 上线前检查
+
+- [ ] 用电脑打开网址，添加一道带照片的菜
+- [ ] 用另一台手机打开同一网址，能看到这道菜
+- [ ] 把网址发到微信，在微信里打开并下一单
+- [ ] 主厨在订单页能看到这一单，并且可以接单
+
+## 常见问题
+
+**微信里打开是空白页或提示程序没有加载完整**：先点提示框里的“重新加载”。如果仍然不行，打开 `https://你的项目名.pages.dev/debug`，诊断页会列出各项检测结果。
+
+**`.pages.dev` 网址在某些网络下打不开**：可以在 Cloudflare 控制台给 Pages 项目绑定一个自己的域名。项目托管在境外，绑定域名不需要 ICP 备案。
+
+**以后修改了代码怎么更新**：在项目目录执行 `npm run deploy`。如果数据库结构有变化，先执行 `npm run db:migrate:remote`。
