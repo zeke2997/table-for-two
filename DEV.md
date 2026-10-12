@@ -2,27 +2,6 @@
 
 本文件面向维护者，记录开发流程、必须遵守的约定和踩过的坑。项目介绍、本地开发命令和部署方法见 [README](README.md) 与 [部署教程](docs/deploy.md)。
 
-> **进行中：迁移到 Cloudflare 全家桶（2026-10 开始）**
-> 原因：Supabase 免费项目闲置 7 天会自动暂停，网站因此失效。改为 Cloudflare Pages + Pages Functions + D1 + KV，
-> 免费额度没有闲置暂停的规则。同时把仓库整理成开源模板（仓库已公开，用于求职展示），并加一个
-> 由用户自填大模型 API key 的 AI 功能。
->
-> - [x] 1. 新电脑环境：Node 装在 `~/.local/opt/node`；wrangler 用 API 令牌认证（OAuth 登录在本机换取令牌时卡住，未用）。
-> - [x] 2. 搭后端：接口在 `functions/api/`，网页移到 `public/`，照片存 KV（R2 要在控制台单独开通，未用）。
-> - [x] 3. 导入 Supabase 的 22 道菜、1 条订单、22 张照片，逐条核对一致；照片地址改成 `/api/photos/<文件名>`。
->   存储桶里另有 1 张没有菜引用的照片，未导入。
-> - [x] 4. AI 写菜谱：按菜名或照片生成菜谱，用户自填 OpenAI 兼容接口，服务端代码在 `lib/ai.js`。已用真实 DeepSeek 验证。
-> - [x] 5. 开源整理：README、部署教程、MIT 许可证、GitHub Actions 自动测试；“她最爱”改为“TA 最爱”。
->   仓库定位为模板（用户 2026-10-11 拍板）：`wrangler.toml` 不进仓库，由 `npm run setup` 生成；
->   店名和称呼存各网站数据库，模板默认“两人食堂”。22 道菜已用 AI（菜名加照片）补全食材、做法、小贴士和耗时，逐道人工核对。
->   资源按“项目名、项目名-photos”命名重建：自用网站数据已搬到新库并核对一致，店名设为“ZEKE 食堂”；
->   演示网站 `table-for-two-demo` 已建好，放了 10 道菜和 2 条订单。两个网站都还没部署新代码。
-> - [ ] 6. 上线验收：两个网站已部署新代码（2026-10-11），电脑上验收通过（演示网站走完下单、接单、AI 写菜谱、
->   上传和删除照片全流程，测试数据已清理；自用网站做了只读检查），代码已推送，GitHub Actions 通过。待办：
->   - 用户在微信里打开两个网站验收；
->   - 验收后问用户是否删除旧资源：D1 `table-for-two`、KV `table-for-two-photos`、Supabase 项目；
->   - 会话收尾删除 Chrome 临时 profile `C:\Users\zeke\AppData\Local\Temp\cc-chrome-tft`。
-
 ## 仓库与网站
 
 - 仓库：https://github.com/zeke2997/table-for-two ，单人开发，直接在 `main` 上提交。仓库同时用作多台电脑之间的中转站。
