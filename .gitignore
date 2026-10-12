@@ -4,6 +4,8 @@
 .dev.vars
 # 各自网站的 Cloudflare 配置，由 npm run setup 生成
 wrangler.toml
+# 本机私人备忘
+LOCAL_NOTES.md
 
 # Node
 node_modules/
