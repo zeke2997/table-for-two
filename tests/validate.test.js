@@ -78,8 +78,8 @@ test("订单状态只能是四种之一", () => {
 });
 
 test("店铺设置：只接受店名和两个称呼，不能为空、不能太长", () => {
-  assert.deepEqual(settingsInput({ app_name: " Zeke 食堂 ", chef_name: "大厨", other: "x" }), {
-    app_name: "Zeke 食堂",
+  assert.deepEqual(settingsInput({ app_name: " 我们的小厨房 ", chef_name: "大厨", other: "x" }), {
+    app_name: "我们的小厨房",
     chef_name: "大厨",
   });
   rejects(() => settingsInput({}), /没有可修改/);

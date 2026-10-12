@@ -15,7 +15,7 @@
     return;
   }
 
-  // 兜底：任何未捕获的错误都显示出来（方便远程排查，而不是无声失灵）
+  // 兜底：任何未捕获的错误都显示出来（方便远程排查）
   window.addEventListener("error", (e) => {
     if (document.getElementById("fatalBox")) return;
     const box = document.createElement("div");

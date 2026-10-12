@@ -1,14 +1,14 @@
 # 两人食堂 · Table for Two（电子菜单模板）
 
 为情侣两人居家做饭设计的点菜与菜谱 Web App。一人当主厨，记录菜谱、处理订单；另一人点菜。
-仓库公开，作者用它向招聘方展示与 AI 协作开发的能力，README、页面文案、提交说明等对外文字要保持专业。
-用户是编程新手，解释问题时用通俗语言，重要操作前说明在做什么。
+仓库公开，README、页面文案、提交说明等一切对外文字，都按 `anti-defensive-writing-en` 和 `no-negative-echo` 两个 skill 检查。
+解释问题时用通俗语言，重要操作前说明在做什么。
 
 ## 架构
 
-- 前端 `public/`：原生 HTML/CSS/JS，无构建步骤。UI 为「胡闹厨房官方工艺」游戏风，勿改回普通网页风。
+- 前端 `public/`：原生 HTML/CSS/JS，无构建步骤。UI 保持「胡闹厨房官方工艺」游戏风。
 - 后端 `functions/api/`：Cloudflare Pages Functions；校验与 AI 请求逻辑在 `lib/`。
-- 数据：D1 `table-for-two` 存菜谱和订单，KV 绑定 `PHOTOS` 存照片，表结构在 `migrations/`。
+- 数据：D1（绑定名 `DB`）存菜谱、订单和店铺设置，KV 绑定 `PHOTOS` 存照片，表结构在 `migrations/`。
 - 仓库是模板：`wrangler.toml` 不进仓库，用 `npm run setup -- 项目名` 生成并切换要操作的网站。演示网站是 `table-for-two-demo`；作者自用网站的项目名和网址不写进仓库里的任何文件，需要时用 `npx wrangler pages project list` 查看。
 - 开发流程、版本号同步、微信兼容、改表结构的步骤都在 `DEV.md`。改 css/js、新增 JS 文件、改表结构之前先读对应小节。
 
